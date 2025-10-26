@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Oluşturucu</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <!-- Fallback QR Code Library -->
+    <script>
+        // Global function to load fallback QR Code library
+        window.loadQRCodeFallback = function () {
+            console.log('Loading fallback QR Code library...');
+            const fallbackScript = document.createElement('script');
+            fallbackScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+            fallbackScript.onerror = function () {
+                console.error('Both QR Code libraries failed to load');
+                showToast('QR Kod kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.', 'error', 'Bağlantı Hatası');
+            };
+            document.head.appendChild(fallbackScript);
+        };
+
+        // Check if QRCode library is loaded
+        let qrCodeCheckInterval;
+        function checkQRCodeLibrary() {
+            if (typeof QRCode !== 'undefined') {
+                clearInterval(qrCodeCheckInterval);
+                console.log('QRCode library loaded successfully');
+                // Remove loading message if exists
+                const loadingMsg = document.querySelector('#qr-code-container .text-indigo-500');
+                if (loadingMsg) {
+                    loadingMsg.remove();
+                }
+                document.getElementById('qr-code-container').classList.remove('generating');
+            }
+        }
+
+        // Start checking for QRCode library
+        qrCodeCheckInterval = setInterval(checkQRCodeLibrary, 100);
+
+        // Also check immediately
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(checkQRCodeLibrary, 500);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const pasteIcon = document.getElementById('paste-url-icon');
+            const urlInput = document.getElementById('url-input');
+
+            pasteIcon.addEventListener('click', async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text.trim()) {
+                        urlInput.value = text.trim();
+                        showToast("Kopyalanan metin yapıştırıldı ✅", "success");
+                    } else {
+                        showToast("Panoda yapıştırılabilir bir metin bulunamadı", "warning");
+                    }
+                } catch (err) {
+                    showToast("Tarayıcı panoya erişim izni vermedi", "error", "İzin Hatası");
+                }
+            });
+        });
+    </script>
+    <style>
+        /* CSS değişkenini animasyon için tanımla */
+        @property --angle {
+            syntax: "<angle>";
+            inherits: false;
+            initial-value: 0deg;
+        }
+
+        /* Dönen renk animasyonu (sadece gradient hareket eder) */
+        @keyframes spin-angle {
+            to {
+                --angle: 360deg;
+            }
+        }
+
+        /* Kart */
+        .bg-white.rounded-xl.shadow-lg.overflow-hidden {
+            position: relative;
+            isolation: isolate;
+        }
+
+        /* Sadece border alanında gradient — SÜREKLİ animasyonlu */
+        .bg-white.rounded-xl.shadow-lg.overflow-hidden::after {
+            --ring: 3px;
+            /* çerçeve kalınlığı */
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 0.75rem;
+            /* rounded-xl */
+            background: conic-gradient(from var(--angle), #5da8ff, #605dff 50%, #ad63f6);
+            z-index: 0;
+            padding: var(--ring);
+            pointer-events: none;
+
+            /* İç bölgeyi maskeyle boşalt → sadece çerçeve görünür */
+            -webkit-mask:
+                linear-gradient(#000 0 0) content-box,
+                linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+
+            opacity: .9;
+
+            /* ⭐ Sürekli çalışan animasyon burada */
+            animation: spin-angle 4s linear infinite;
+        }
+    </style>
+</head>
+
+<body class="">
+    <custom-navbar></custom-navbar>
+
+    <main class="container mx-auto px-4 py-12 max-w-4xl">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-[800] mb-4" style="background: -webkit-linear-gradient(45deg, #605dff, #ad63f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;">
+                QR CODE OLUŞTURUCU <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" fill="currentColor"
+                    class="bi bi-stars" viewBox="0 0 16 16" style="display: inline-block; color: #ad63f6;">
+                    <path
+                        d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.828zM3.794 1.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387A1.73 1.73 0 0 0 4.593 5.69l-.387 1.162a.217.217 0 0 1-.412 0L3.407 5.69A1.73 1.73 0 0 0 2.31 4.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387A1.73 1.73 0 0 0 3.407 2.31zM10.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732L9.1 2.137a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z" />
+                </svg>
+            </h1>
+            <p class="text-lg max-w-2xl mx-auto" style="color: #4a516d">
+                Herhangi bir URL'yi anında güzel bir QR koduna dönüştürün. Kolayca paylaşın, indirin ve tarayın!
+            </p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 md:p-8">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-1">
+                        <div style="margin-bottom: 1rem;">
+                            <label for="url-input" class="block text-sm font-medium mb-2 url-text"
+                                style="color: #0c0e19; font-size: medium;">
+                                Dönüştürülecek URL'yi Giriniz
+                            </label>
+                            <div class="relative">
+                                <input type="url" id="url-input" placeholder="https://ornek.com"
+                                    class="w-full px-4 py-3 pr-12 rounded-lg border border-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                <i id="paste-url-icon" data-feather="link"
+                                    class="absolute right-3 top-3.5 text-indigo-400 cursor-pointer"></i>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium mb-2 url-text"
+                                style="color: #0c0e19; font-size: medium;">
+                                QR Kod Rengi
+                            </label>
+                            <!-- QR Kod Rengi -->
+                            <div class="color-grid" role="radiogroup" aria-label="QR Kod Rengi">
+                                <!-- Siyah -->
+                                <div class="color-item">
+                                    <input type="radio" id="color-default" name="qr-color" value="default"
+                                        class="sr-only" checked>
+                                    <label for="color-default" class="color-card" tabindex="0">
+                                        <span class="swatch" style="--swatch-bg:#111827"></span>
+                                        <span class="label-text">Siyah</span>
+                                    </label>
+                                </div>
+
+                                <!-- Mavi (indigo gradient) -->
+                                <div class="color-item">
+                                    <input type="radio" id="color-indigo" name="qr-color" value="indigo"
+                                        class="sr-only">
+                                    <label for="color-indigo" class="color-card" tabindex="0">
+                                        <span class="swatch"
+                                            style="--swatch-bg:linear-gradient(135deg,#5da8ff,#605dff)"></span>
+                                        <span class="label-text">Mavi</span>
+                                    </label>
+                                </div>
+
+                                <!-- Mor -->
+                                <div class="color-item">
+                                    <input type="radio" id="color-purple" name="qr-color" value="purple"
+                                        class="sr-only">
+                                    <label for="color-purple" class="color-card" tabindex="0">
+                                        <span class="swatch"
+                                            style="--swatch-bg:linear-gradient(135deg,#605dff,#ad63f6)"></span>
+                                        <span class="label-text">Mor</span>
+                                    </label>
+                                </div>
+
+                                <!-- Bordo -->
+                                <div class="color-item">
+                                    <input type="radio" id="color-maroon" name="qr-color" value="maroon"
+                                        class="sr-only">
+                                    <label for="color-maroon" class="color-card" tabindex="0">
+                                        <span class="swatch"
+                                            style="--swatch-bg:linear-gradient(135deg,#b42e55,#7b1e3a)"></span>
+                                        <span class="label-text">Bordo</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="generate-btn"
+                            class="w-full text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center space-x-2">
+                            <i data-feather="zap"></i>
+                            <span>QR Kod Oluştur</span>
+                        </button>
+                        <div id="download-options" class="hidden mt-4">
+                            <button id="download-png"
+                                class="bg-green-500 font-bold hover:bg-green-600 text-white py-3 px-4 rounded-lg transition flex items-center justify-center min-w-[200px]">
+                                <i data-feather="download"></i>
+                                <span>PNG İndir</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 flex flex-col items-center justify-center">
+                        <div id="qr-code-container"
+                            class="shimmer-grid p-6 rounded-lg border border-gray-200 mb-4 w-80 h-80 flex items-center justify-center">
+                            <div class="text-center text-gray-500">
+                                <i data-feather="qr-code" class="w-16 h-16 mx-auto mb-2"></i>
+                                <p style="color: #0c0e19;">QR Kodunuz Burada Görünecek</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="text-indigo-600 mb-4">
+                    <i data-feather="zap" class="w-8 h-8" style="color: #605dff;"></i>
+                </div>
+                <h3 style="color: #605dff;" class="font-bold text-lg mb-2 text-indigo-900">Anında Oluşturma</h3>
+                <p style="color: #4a516d;">Yıldırım hızında jeneratörümüzle saniyeler içinde QR kodları oluşturun.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="text-indigo-600 mb-4">
+                    <i data-feather="download" class="w-8 h-8" style="color: #605dff;"></i>
+                </div>
+                <h3 style="color: #605dff;" class="font-bold text-lg mb-2 text-indigo-900">PNG Format</h3>
+                <p style="color: #4a516d;">QR kodlarınızı PNG formatında yüksek kalitede indirin.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="text-indigo-600 mb-4">
+                    <i data-feather="lock" class="w-8 h-8" style="color: #605dff;"></i>
+                </div>
+                <h3 style="color: #605dff;" class="font-bold text-lg mb-2 text-indigo-900">Gizlilik Odaklı</h3>
+                <p style="color: #4a516d;">Tüm işlemler tarayıcınızda gerçekleşir - hiçbir veri sunuculara gönderilmez.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <custom-footer></custom-footer>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="components/navbar.js"></script>
+    <script src="components/footer.js"></script>
+    <script src="script.js"></script>
+    <script>
+        feather.replace();
+    </script>
+</body>
+
+</html>
